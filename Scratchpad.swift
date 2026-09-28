@@ -1,4 +1,4 @@
-import Foundation 
+import Foundation
 
 // Scratchpad para testes
 
@@ -15,4 +15,12 @@ let (data, response) = try await URLSession.shared.data(from: url)
 
 let todo = try JSONDecoder().decode(Todo.self, from: data)
 
-print(todo.title) 
+print(todo.title)
+
+
+let govUrl = URL(string:"https://apisidra.ibge.gov.br/values/t/7139/n3/29/v/all/p/last%201")!
+
+let (govData, govResp) = try await URLSession.shared.data(from: govUrl)
+let govText = String(data: govData, encoding: .utf8)!
+
+print("GOV RESPONSE n/" + "\(govText)") 
