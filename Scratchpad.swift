@@ -26,6 +26,15 @@ let (data, response) = try await URLSession.shared.data(from: url)
 
 let rows = try JSONDecoder().decode([SidraRow].self, from: data)
 
+let legend = rows[0]
+
+print("Legenda:")
+for item in Mirror(reflecting: legend).children { 
+	print(item.label ?? "?", ":", item.value)
+}
+
+print("Valores:")
+
 print(rows[1].D1N)
 print(rows[1].D2N)
 print(rows[1].V)
