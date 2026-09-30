@@ -2,39 +2,71 @@ import Foundation
 
 // Scratchpad para testes
 
-struct SidraRow: Decodable {
-    let NC: String
-    let NN: String
-    let MC: String
-    let MN: String
-    let V: String
-    let D1C: String
-    let D1N: String
-    let D2C: String
-    let D2N: String
-    let D3C: String
-    let D3N: String
-    let D4C: String
-    let D4N: String
-    let D5C: String
-    let D5N: String
+struct IBGEVariable: Decodable {
+    let id: String
+    let variavel: String
+    let unidade: String
+    let resultados: [IBGEResult]
 }
 
-let url = URL(string:"https://apisidra.ibge.gov.br/values/t/7139/n3/29/v/all/p/last%201")!
+struct IBGEResult: Decodable {
+    let classificacoes: [IBGEClassification]
+    let series: [IBGESeries]
+}
+
+struct IBGEClassification: Decodable {
+    let nome: String
+    let categoria: [String: String]
+}
+
+struct IBGESeries: Decodable {
+    let localidade: IBGELocation
+    let serie: [String: String]
+}
+
+struct IBGELocation: Decodable {
+    let id: String
+    let nome: String
+}
+
+let url = URL(
+    string: "https://servicodados.ibge.gov.br/api/v3/agregados/7139/periodos/-1/variaveis/all?localidades=N3%5B29%5D"
+)!
 
 let (data, response) = try await URLSession.shared.data(from: url)
 
-let rows = try JSONDecoder().decode([SidraRow].self, from: data)
-
-let legend = rows[0]
-
-print("Legenda:")
-for item in Mirror(reflecting: legend).children { 
-	print(item.label ?? "?", ":", item.value)
+guard let httpResponse = response as? HTTPURLResponse,
+      httpResponse.statusCode == 200 else {
+    throw URLError(.badServerResponse)
 }
 
-print("Valores:")
+let variables = try JSONDecoder().decode(
+    [IBGEVariable].self,
+    from: data
+)
 
-print(rows[1].D1N)
-print(rows[1].D2N)
-print(rows[1].V)
+for variable in variables {
+    print("\nIndicador:", variable.variavel)
+
+    for result in variable.resultados {
+        for classification in result.classificacoes {
+            let categories = classification.categoria.values
+                .sorted()
+                .joined(separator: ", ")
+
+            print("\(classification.nome): \(categories)")
+        }
+
+        for series in result.series {
+            print("Local:", series.localidade.nome)
+
+            for year in series.serie.keys.sorted() {
+                if let value = series.serie[year] {
+                    print("\(year): \(value) \(variable.unidade)")
+                }
+            }
+        }
+
+        print("---")
+    }
+}
