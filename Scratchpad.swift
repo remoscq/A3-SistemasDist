@@ -1,5 +1,5 @@
 import Foundation
-
+import FoundationNetworking
 // Scratchpad para testes
 
 struct IBGEVariable: Decodable {
