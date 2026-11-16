@@ -1,5 +1,9 @@
+#if os(macOS)
 import Foundation
+#endif
+#if os(Linux)
 import FoundationNetworking
+#endif
 // Scratchpad para testes
 
 struct IBGEVariable: Decodable {
