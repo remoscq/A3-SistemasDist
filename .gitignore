@@ -1,1 +1,21 @@
+# Dependências e artefatos gerados
+node_modules/
+.build/
+.swiftpm/
+.wrangler/
+
+# Configurações locais
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+.aws/
+.codex/
+.agents/
+
+# Logs, dumps e arquivos do sistema
+*.log
+core
+core.[0-9]*
 .DS_Store
+Thumbs.db

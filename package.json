@@ -1,0 +1,27 @@
+{
+  "name": "bahia-educacao",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Módulo de Educação do Bahia API Hub — dados públicos do IBGE.",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "npm run build && swift run --build-system native App serve --hostname 127.0.0.1 --port 3000",
+    "start": "swift run --build-system native -c release App serve --env production --hostname 0.0.0.0 --port 8080",
+    "check": "node --check public/app.js && node --check public/data.js && node --check src/worker.js && node --check lib/headers.js && node --check lib/swift.js",
+    "test": "node --test tests-js/*.test.mjs",
+    "build": "tailwindcss -i ./src/styles.css -o ./public/styles.css --minify",
+    "build:swift": "swift build --build-system native -c release --product App",
+    "watch:css": "tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
+    "dev:cloudflare": "npm run build && npx --yes wrangler@4 dev",
+    "deploy": "npm run build && npx --yes wrangler@4 deploy",
+    "deploy:check": "npm run build && npx --yes wrangler@4 deploy --dry-run",
+    "test:swift": "swift test --build-system native"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.4",
+    "tailwindcss": "^4.3.4"
+  }
+}

@@ -1,0 +1,12 @@
+.git
+.agents
+.codex
+.aws
+.build
+.swiftpm
+.wrangler
+node_modules
+.env*
+.dev.vars*
+docs
+*.log
