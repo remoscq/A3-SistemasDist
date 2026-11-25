@@ -20,10 +20,10 @@
   - `GET /api/indicadores`: 200.
   - O adaptador do Worker (`fetchSwiftGuanambi`) aceitou a resposta real do Vapor.
 - Página verificada por captura de tela no Firefox headless (1280 px): cards, gráfico, tabela e barras comparativas exibidos com os dados reais.
+- Layout conferido em celular real (pela rede local) e por captura em 390 px: cards e blocos empilhados, gráfico ajustado à largura e tabelas com rolagem horizontal.
 
 ### Limitações
 
-- A captura em largura de celular foi feita antes de os dados carregarem; o layout responsivo ainda precisa ser conferido em um aparelho.
 - Imagem Docker, build de produção e deploy no Cloudflare continuam não validados.
 
 ## API Swift com Vapor — validação de 16/11/2026

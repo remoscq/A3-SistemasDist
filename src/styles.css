@@ -90,18 +90,21 @@
   #refresh.loading svg { animation: spin 1s linear infinite; }
   .guanambi { @apply mt-12 border-t border-slate-200 pt-8; }
   .guanambi h3 { @apply text-base font-semibold text-slate-800; }
-  .stage-card { @apply grid gap-0 text-left transition-colors hover:border-indigo-200; }
-  .stage-card[aria-pressed=true] { @apply border-modulo-educacao ring-1 ring-modulo-educacao; }
+  .stage-card { @apply grid gap-0 text-left transition-colors hover:border-slate-300; }
+  .stage-card[aria-pressed=true] { @apply border-indigo-200 bg-indigo-50/40; }
   .stage-label { @apply text-sm font-medium text-slate-600; }
   .stage-card[aria-pressed=true] .stage-label { @apply font-semibold text-modulo-educacao; }
   .table-scroll-tall { @apply max-h-96 overflow-y-auto; }
   .table-scroll-tall thead th { @apply sticky top-0 bg-background; }
   .legend-dot-bahia { @apply bg-slate-400; }
+  .subsection-heading { @apply mt-10 mb-4 flex flex-wrap items-end justify-between gap-3; }
+  .legend { @apply flex gap-4 text-xs text-slate-500; }
+  .legend span { @apply flex items-center gap-2; }
   .compare-totals { @apply mt-5 grid grid-cols-2 gap-4; }
   .compare-totals p { @apply grid gap-1; }
-  .compare-name { @apply flex items-center gap-2 text-xs text-slate-500; }
+  .compare-name { @apply text-xs text-slate-500; }
   .compare-value { @apply text-3xl font-semibold tracking-tight tabular-nums; }
-  .segmented { @apply mt-6 inline-flex rounded-lg border border-slate-200 bg-background p-1; }
+  .segmented { @apply mt-5 inline-flex rounded-lg border border-slate-200 bg-background p-1; }
   .segmented button { @apply min-h-9 rounded-md px-3 text-xs font-medium text-slate-600; }
   .segmented button[aria-pressed=true] { @apply bg-surface text-modulo-educacao shadow-card; }
   .pairs { @apply mt-5 grid gap-3; }
