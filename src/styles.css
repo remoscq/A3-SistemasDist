@@ -1,0 +1,128 @@
+@import "tailwindcss" source(none);
+@source "../public/index.html";
+@source "../public/app.js";
+@source "../public/guanambi.js";
+@source "../public/chart.js";
+
+/* Valores oficiais do Bahia API Hub, adaptados ao tema do Tailwind v4. */
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --color-brand: #2563eb;
+  --color-modulo-clima: #f59e0b;
+  --color-modulo-economia: #0ea5e9;
+  --color-modulo-educacao: #4f46e5;
+  --color-modulo-eleicao: #8b5cf6;
+  --color-modulo-populacao: #10b981;
+  --color-surface: #ffffff;
+  --color-background: #f8fafc;
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+@layer base {
+  body { @apply min-h-screen bg-background font-sans text-sm text-slate-800 antialiased; }
+  button, select, a, [tabindex] { @apply outline-offset-4 focus-visible:outline-2 focus-visible:outline-modulo-educacao; }
+  button { @apply cursor-pointer; }
+  button:disabled, select:disabled { @apply cursor-not-allowed opacity-50; }
+  select { @apply min-h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-surface px-3 py-2 text-sm text-slate-800; }
+  label { @apply grid min-w-0 gap-2 text-sm font-medium text-slate-600; }
+  svg { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  a { @apply text-modulo-educacao underline-offset-4 hover:underline; }
+  [hidden] { display: none !important; }
+}
+
+@layer components {
+  .card { @apply min-w-0 rounded-xl border border-slate-100 bg-surface p-6 shadow-card; }
+  .button { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-transparent px-4 py-2 text-sm font-medium transition-colors; }
+  .button svg { @apply size-4 shrink-0; }
+  .button-primary { @apply bg-modulo-educacao text-white hover:brightness-95; }
+  .button-secondary { @apply border-slate-300 bg-surface text-slate-600 hover:bg-slate-100; }
+  .button-reset { @apply text-slate-600 hover:bg-slate-100; }
+  .section-heading { @apply flex flex-wrap items-start justify-between gap-3; }
+  .section-heading h2 { @apply text-base font-semibold text-slate-800; }
+  .section-description { @apply mt-2 text-sm leading-6 text-slate-500; }
+  .small-badge { @apply rounded-md bg-background px-2.5 py-1 text-xs font-medium text-slate-600; }
+  .metric-heading h2 { @apply text-sm font-medium text-slate-600; }
+  .metric-value { @apply mt-4 text-4xl font-semibold tracking-tight tabular-nums; }
+  .metric-value .unit { @apply ml-1 text-lg font-medium tracking-normal text-slate-500; }
+  .metric-note { @apply mt-3 text-xs leading-5 text-slate-500; }
+  .feedback { @apply flex min-h-14 items-center py-3 text-xs leading-5 text-slate-500; }
+  .feedback[data-state=error] { @apply text-red-700; }
+  .feedback[data-state=loading] { @apply text-modulo-educacao; }
+  .chart-container { @apply mt-5 flex min-h-60 items-center; }
+  .chart-svg { @apply block h-auto w-full overflow-visible; }
+  .chart-grid { stroke: #e2e8f0; stroke-width: 1; }
+  .chart-axis { font-family: var(--font-sans); font-size: 11px; fill: #64748b; stroke: none; }
+  .chart-line { stroke: var(--color-modulo-educacao); stroke-width: 2.5; }
+  .chart-dot { fill: white; stroke: var(--color-modulo-educacao); stroke-width: 2; }
+  .chart-dot-latest { fill: var(--color-modulo-educacao); stroke: white; stroke-width: 3; }
+  .chart-value { fill: var(--color-modulo-educacao); font-size: 12px; font-weight: 600; stroke: none; }
+  .chart-highlight { stroke: #c7d2fe; stroke-width: 1; stroke-dasharray: 3 4; }
+  .chart-caption { @apply mt-3 flex justify-between gap-3 text-xs text-slate-500; }
+  .legend-dot { @apply inline-block size-2 rounded-full bg-modulo-educacao; }
+  .chart-footnote { @apply mt-5 border-t border-slate-100 pt-4 text-xs leading-5 text-slate-500; }
+  .chart-placeholder { @apply grid min-h-44 w-full place-items-center text-center text-sm leading-6 text-slate-500; }
+  .breakdown { @apply mt-5 grid gap-2; }
+  .breakdown-item { @apply -mx-2 grid min-h-9 grid-cols-[100px_minmax(0,1fr)_48px] items-center gap-3 rounded-md px-2 py-1 text-left text-xs text-slate-600 hover:bg-slate-50; }
+  .breakdown-item[aria-pressed=true] { @apply bg-indigo-50; }
+  .breakdown-item[aria-pressed=true] .breakdown-label { @apply font-semibold text-modulo-educacao; }
+  .bar-track { @apply h-1.5 overflow-hidden rounded-sm bg-slate-100; }
+  .bar-svg { @apply block h-1.5 w-full; stroke: none; }
+  .bar-fill { fill: #a5b4fc; }
+  .breakdown-item[aria-pressed=true] .bar-fill { fill: var(--color-modulo-educacao); }
+  .breakdown-value { @apply text-right font-medium text-slate-800 tabular-nums; }
+  .table-scroll { @apply mt-6 overflow-x-auto rounded-lg border border-slate-100; }
+  table { @apply w-full border-collapse whitespace-nowrap text-left text-sm; }
+  thead { @apply bg-background; }
+  th { @apply px-4 py-3 text-xs font-medium text-slate-600; }
+  td { @apply border-t border-slate-100 px-4 py-3 text-slate-600; }
+  td:first-child, td.rate-cell { @apply font-medium text-slate-800; }
+  tbody tr { @apply hover:bg-slate-50; }
+  tr.latest-row td:first-child { @apply text-modulo-educacao; }
+  .numeric { @apply text-right tabular-nums; }
+  .table-period { @apply inline-flex items-center gap-2; }
+  .latest-label { @apply rounded bg-indigo-50 px-1.5 py-1 text-[10px] font-medium text-modulo-educacao; }
+  .table-note { @apply mt-4 text-xs leading-5 text-slate-500; }
+  .source-timestamp { @apply mt-2 block text-xs text-slate-500; }
+  .error-panel, .empty-panel { @apply mb-6 py-10 text-center; }
+  .error-panel h2, .empty-panel h2 { @apply text-lg font-semibold; }
+  .error-panel p, .empty-panel p { @apply mx-auto my-4 max-w-lg text-sm leading-6 text-slate-600; }
+  #dashboard[aria-busy=true] { @apply opacity-50; }
+  #refresh.loading svg { animation: spin 1s linear infinite; }
+  .guanambi { @apply mt-12 border-t border-slate-200 pt-8; }
+  .guanambi h3 { @apply text-base font-semibold text-slate-800; }
+  .stage-card { @apply grid gap-0 text-left transition-colors hover:border-indigo-200; }
+  .stage-card[aria-pressed=true] { @apply border-modulo-educacao ring-1 ring-modulo-educacao; }
+  .stage-label { @apply text-sm font-medium text-slate-600; }
+  .stage-card[aria-pressed=true] .stage-label { @apply font-semibold text-modulo-educacao; }
+  .table-scroll-tall { @apply max-h-96 overflow-y-auto; }
+  .table-scroll-tall thead th { @apply sticky top-0 bg-background; }
+  .legend-dot-bahia { @apply bg-slate-400; }
+  .compare-totals { @apply mt-5 grid grid-cols-2 gap-4; }
+  .compare-totals p { @apply grid gap-1; }
+  .compare-name { @apply flex items-center gap-2 text-xs text-slate-500; }
+  .compare-value { @apply text-3xl font-semibold tracking-tight tabular-nums; }
+  .segmented { @apply mt-6 inline-flex rounded-lg border border-slate-200 bg-background p-1; }
+  .segmented button { @apply min-h-9 rounded-md px-3 text-xs font-medium text-slate-600; }
+  .segmented button[aria-pressed=true] { @apply bg-surface text-modulo-educacao shadow-card; }
+  .pairs { @apply mt-5 grid gap-3; }
+  .pair-row { @apply grid grid-cols-[110px_minmax(0,1fr)_52px] items-center gap-3 text-xs text-slate-600; }
+  .pair-bars, .pair-values { @apply grid gap-1.5; }
+  .pair-values { @apply text-right tabular-nums; }
+  .pair-value-guanambi { @apply font-semibold text-slate-800; }
+  .pair-value-bahia { @apply text-slate-500; }
+  .pair-fill-guanambi { fill: var(--color-modulo-educacao); }
+  .pair-fill-bahia { fill: #94a3b8; }
+  #g-dashboard[aria-busy=true] { @apply opacity-50; }
+  .skip-link { @apply absolute -top-24 left-4 z-10 rounded bg-surface p-3 focus:top-4; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+@media print {
+  .intro-actions, #filters, #g-filters, .segmented, .skip-link, .button, .feedback { display: none; }
+  main { max-width: none !important; padding: 0 !important; }
+  .card { break-inside: avoid; box-shadow: none; }
+  .table-scroll { overflow: visible; }
+}
