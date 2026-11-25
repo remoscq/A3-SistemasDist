@@ -1,6 +1,8 @@
 @import "tailwindcss" source(none);
 @source "../public/index.html";
 @source "../public/app.js";
+@source "../public/guanambi.js";
+@source "../public/chart.js";
 
 /* Valores oficiais do Bahia API Hub, adaptados ao tema do Tailwind v4. */
 @theme {
@@ -86,6 +88,31 @@
   .error-panel p, .empty-panel p { @apply mx-auto my-4 max-w-lg text-sm leading-6 text-slate-600; }
   #dashboard[aria-busy=true] { @apply opacity-50; }
   #refresh.loading svg { animation: spin 1s linear infinite; }
+  .guanambi { @apply mt-12 border-t border-slate-200 pt-8; }
+  .guanambi h3 { @apply text-base font-semibold text-slate-800; }
+  .stage-card { @apply grid gap-0 text-left transition-colors hover:border-indigo-200; }
+  .stage-card[aria-pressed=true] { @apply border-modulo-educacao ring-1 ring-modulo-educacao; }
+  .stage-label { @apply text-sm font-medium text-slate-600; }
+  .stage-card[aria-pressed=true] .stage-label { @apply font-semibold text-modulo-educacao; }
+  .table-scroll-tall { @apply max-h-96 overflow-y-auto; }
+  .table-scroll-tall thead th { @apply sticky top-0 bg-background; }
+  .legend-dot-bahia { @apply bg-slate-400; }
+  .compare-totals { @apply mt-5 grid grid-cols-2 gap-4; }
+  .compare-totals p { @apply grid gap-1; }
+  .compare-name { @apply flex items-center gap-2 text-xs text-slate-500; }
+  .compare-value { @apply text-3xl font-semibold tracking-tight tabular-nums; }
+  .segmented { @apply mt-6 inline-flex rounded-lg border border-slate-200 bg-background p-1; }
+  .segmented button { @apply min-h-9 rounded-md px-3 text-xs font-medium text-slate-600; }
+  .segmented button[aria-pressed=true] { @apply bg-surface text-modulo-educacao shadow-card; }
+  .pairs { @apply mt-5 grid gap-3; }
+  .pair-row { @apply grid grid-cols-[110px_minmax(0,1fr)_52px] items-center gap-3 text-xs text-slate-600; }
+  .pair-bars, .pair-values { @apply grid gap-1.5; }
+  .pair-values { @apply text-right tabular-nums; }
+  .pair-value-guanambi { @apply font-semibold text-slate-800; }
+  .pair-value-bahia { @apply text-slate-500; }
+  .pair-fill-guanambi { fill: var(--color-modulo-educacao); }
+  .pair-fill-bahia { fill: #94a3b8; }
+  #g-dashboard[aria-busy=true] { @apply opacity-50; }
   .skip-link { @apply absolute -top-24 left-4 z-10 rounded bg-surface p-3 focus:top-4; }
 }
 
@@ -94,7 +121,7 @@
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 @media print {
-  .intro-actions, #filters, .skip-link, .button, .feedback { display: none; }
+  .intro-actions, #filters, #g-filters, .segmented, .skip-link, .button, .feedback { display: none; }
   main { max-width: none !important; padding: 0 !important; }
   .card { break-inside: avoid; box-shadow: none; }
   .table-scroll { overflow: visible; }

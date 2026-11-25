@@ -40,76 +40,63 @@ public enum IBGEError: Error, Equatable {
     case timeout
 }
 
-public actor IndicatorsService {
+public struct IndicatorsService: Sendable {
     public static let sourceURL = URL(string: "https://servicodados.ibge.gov.br/api/v3/agregados/7139/periodos/-10/variaveis/all?localidades=N3%5B29%5D&classificacao=58%5Ball%5D%7C86%5Ball%5D")!
     public typealias Loader = @Sendable () async throws -> [IBGEVariable]
 
-    private let load: Loader
-    private let ttl: Duration
-    private let clock = ContinuousClock()
-    private var cached: IndicatorsPayload?
-    private var cachedAt: ContinuousClock.Instant?
-    private var pending: Task<IndicatorsPayload, Error>?
+    private let cache: CachedLoader<IndicatorsPayload>
 
     public init(ttl: Duration = .seconds(900), load: @escaping Loader) {
-        self.ttl = ttl
-        self.load = load
-    }
-
-    public func indicators() async throws -> IndicatorsPayload {
-        if let cached, let cachedAt, cachedAt.duration(to: clock.now) < ttl {
-            return cached
-        }
-        if let pending { return try await pending.value }
-        let load = self.load
-        let task = Task {
+        cache = CachedLoader(ttl: ttl) {
             let variables = try await load()
             try Self.validate(variables)
             return IndicatorsPayload(
                 variables: variables,
-                fetchedAt: ISO8601DateFormatter().string(from: Date()),
+                fetchedAt: timestamp(),
                 sourceUrl: Self.sourceURL.absoluteString,
                 provider: "swift"
             )
         }
-        pending = task
-        do {
-            let payload = try await task.value
-            cached = payload
-            cachedAt = clock.now
-            pending = nil
-            return payload
-        } catch {
-            pending = nil
-            throw error
-        }
+    }
+
+    public func indicators() async throws -> IndicatorsPayload {
+        try await cache.value()
     }
 
     public static func validate(_ variables: [IBGEVariable]) throws {
-        func valid(_ value: String) -> Bool { !value.isEmpty && value.count <= 1000 }
-        guard variables.count <= 100 else { throw IBGEError.invalidResponse }
-        for variable in variables {
-            guard valid(variable.id), valid(variable.variavel) else { throw IBGEError.invalidResponse }
-            let known = ["10276", "10277"].contains(variable.id)
-            if known && variable.unidade != "%" { throw IBGEError.invalidResponse }
-            for result in variable.resultados {
-                if known {
-                    for id in ["58", "86"] {
-                        guard let classification = result.classificacoes.first(where: { $0.id == id }),
-                              classification.categoria.count == 1 else { throw IBGEError.invalidResponse }
-                    }
-                }
-                for classification in result.classificacoes {
-                    guard valid(classification.id), valid(classification.nome),
-                          classification.categoria.allSatisfy({ valid($0.key) && valid($0.value) })
-                    else { throw IBGEError.invalidResponse }
-                }
-                for series in result.series {
-                    guard valid(series.localidade.id), valid(series.localidade.nome),
-                          series.serie.allSatisfy({
-                              $0.key.range(of: #"^[0-9]{4}$"#, options: .regularExpression) != nil && $0.value.count <= 100
-                          }) else { throw IBGEError.invalidResponse }
-                }
+        try validateAgregados(variables, required: ["10276": ["58", "86"], "10277": ["58", "86"]])
+    }
+}
+
+func validText(_ value: String) -> Bool { !value.isEmpty && value.count <= 1000 }
+
+func validYear(_ value: String) -> Bool {
+    value.range(of: #"^[0-9]{4}$"#, options: .regularExpression) != nil
+}
+
+/// Valida respostas da API de agregados (v3) do IBGE.
+/// Para cada variável conhecida em `required`, exige unidade "%" e uma única categoria
+/// em cada classificação informada.
+public func validateAgregados(_ variables: [IBGEVariable], required: [String: [String]]) throws {
+    guard variables.count <= 100 else { throw IBGEError.invalidResponse }
+    for variable in variables {
+        guard validText(variable.id), validText(variable.variavel) else { throw IBGEError.invalidResponse }
+        let classifications = required[variable.id]
+        if classifications != nil && variable.unidade != "%" { throw IBGEError.invalidResponse }
+        for result in variable.resultados {
+            for id in classifications ?? [] {
+                guard let classification = result.classificacoes.first(where: { $0.id == id }),
+                      classification.categoria.count == 1 else { throw IBGEError.invalidResponse }
+            }
+            for classification in result.classificacoes {
+                guard validText(classification.id), validText(classification.nome),
+                      classification.categoria.allSatisfy({ validText($0.key) && validText($0.value) })
+                else { throw IBGEError.invalidResponse }
+            }
+            for series in result.series {
+                guard validText(series.localidade.id), validText(series.localidade.nome),
+                      series.serie.allSatisfy({ validYear($0.key) && $0.value.count <= 100 })
+                else { throw IBGEError.invalidResponse }
             }
         }
     }

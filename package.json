@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "npm run build && swift run --build-system native App serve --hostname 127.0.0.1 --port 3000",
     "start": "swift run --build-system native -c release App serve --env production --hostname 0.0.0.0 --port 8080",
-    "check": "node --check public/app.js && node --check public/data.js && node --check src/worker.js && node --check lib/headers.js && node --check lib/swift.js",
+    "check": "for f in public/*.js src/worker.js lib/*.js; do node --check \"$f\" || exit 1; done",
     "test": "node --test tests-js/*.test.mjs",
     "build": "tailwindcss -i ./src/styles.css -o ./public/styles.css --minify",
     "build:swift": "swift build --build-system native -c release --product App",

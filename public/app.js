@@ -1,4 +1,7 @@
 import { normalizeVariables, TOTAL_AGE, TOTAL_RACE, selectRecords, previousObservation, formatNumber, formatRaw, recordsToCsv } from './data.js';
+import { node, svgNode, setOptions } from './dom.js';
+import { renderLineChart } from './chart.js';
+import { initGuanambi, loadGuanambi } from './guanambi.js';
 
 const $ = id => document.getElementById(id);
 const elements = Object.fromEntries(['period', 'age', 'race', 'refresh', 'export', 'reset', 'feedback', 'dashboard', 'error-panel', 'empty-panel'].map(id => [id, $(id)]));
@@ -7,73 +10,22 @@ let loading = false;
 let currentRows = [];
 let failedRefresh = false;
 
-function node(tag, className, text) {
-  const element = document.createElement(tag);
-  if (className) element.className = className;
-  if (text !== undefined) element.textContent = text;
-  return element;
-}
-
-function setOptions(select, options, selected) {
-  select.replaceChildren(...options.map(([value, label]) => new Option(label, value)));
-  select.value = options.some(([value]) => value === selected) ? selected : options[0]?.[0] ?? '';
-}
-
 function metric(id, value, unit) {
   const target = $(id);
   target.replaceChildren(document.createTextNode(value));
   if (value !== '—') target.append(node('span', 'unit', unit));
 }
 
-function svgNode(tag, attributes = {}, text) {
-  const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
-  for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, String(value));
-  if (text !== undefined) element.textContent = text;
-  return element;
-}
-
 function renderChart(records) {
-  const observations = records.filter(row => row.rate !== null);
-  const target = $('chart');
-  if (!observations.length) {
-    target.replaceChildren(node('p', 'chart-placeholder', 'Não há valores numéricos para desenhar o gráfico deste recorte.'));
-    return;
-  }
-  const firstYear = Number(records[0].year), lastYear = Number(records.at(-1).year);
-  const width = Math.max(280, target.clientWidth), height = 250;
-  const plot = { left: 35, right: width - 25, top: 30, bottom: 212 };
-  const x = year => firstYear === lastYear ? (plot.left + plot.right) / 2 : plot.left + (Number(year) - firstYear) / (lastYear - firstYear) * (plot.right - plot.left);
-  const y = value => plot.bottom - value / 100 * (plot.bottom - plot.top);
-  const svg = svgNode('svg', { viewBox: `0 0 ${width} ${height}`, class: 'chart-svg', role: 'img', 'aria-labelledby': 'chart-svg-title chart-svg-description' });
-  svg.append(svgNode('title', { id: 'chart-svg-title' }, 'Evolução da taxa de escolarização na Bahia'));
-  svg.append(svgNode('desc', { id: 'chart-svg-description' }, 'Escala de zero a cem por cento. ' + observations.map(row => `${row.year}: ${formatNumber(row.rate)}%`).join('; ') + '. Valores completos na tabela abaixo.'));
-  for (const value of [0, 25, 50, 75, 100]) {
-    svg.append(svgNode('line', { x1: plot.left, x2: plot.right, y1: y(value), y2: y(value), class: 'chart-grid' }));
-    svg.append(svgNode('text', { x: plot.left - 13, y: y(value) + 3, 'text-anchor': 'end', class: 'chart-axis' }, `${value}`));
-  }
-  const last = observations.at(-1);
-  svg.append(svgNode('line', { x1: x(last.year), x2: x(last.year), y1: plot.top, y2: plot.bottom, class: 'chart-highlight' }));
-  // Não conecta nem interpola anos não disponíveis ou valores não numéricos.
-  let previous = null;
-  for (const record of records) {
-    if (record.rate !== null && previous?.rate !== null && previous && Number(record.year) - Number(previous.year) === 1) {
-      svg.append(svgNode('line', { x1: x(previous.year), y1: y(previous.rate), x2: x(record.year), y2: y(record.rate), class: 'chart-line' }));
-    }
-    previous = record;
-  }
-  const labelStep = Math.max(1, Math.ceil(42 / ((plot.right - plot.left) / Math.max(1, lastYear - firstYear))));
-  for (let year = firstYear; year <= lastYear; year++) {
-    if (year === firstYear || year === lastYear || ((year - firstYear) % labelStep === 0 && lastYear - year >= labelStep)) {
-      svg.append(svgNode('text', { x: x(year), y: plot.bottom + 23, 'text-anchor': 'middle', class: 'chart-axis' }, `${year}`));
-    }
-  }
-  for (const record of observations) {
-    const circle = svgNode('circle', { cx: x(record.year), cy: y(record.rate), r: record === last ? 5.5 : 3.5, class: record === last ? 'chart-dot-latest' : 'chart-dot' });
-    circle.append(svgNode('title', {}, `${record.year}: ${formatNumber(record.rate)}%`));
-    svg.append(circle);
-  }
-  svg.append(svgNode('text', { x: x(last.year), y: y(last.rate) - 14, 'text-anchor': 'middle', class: 'chart-value' }, `${formatNumber(last.rate)}%`));
-  target.replaceChildren(svg);
+  renderLineChart($('chart'), records.map(record => ({ year: record.year, value: record.rate })), {
+    max: 100,
+    ticks: [0, 25, 50, 75, 100],
+    axisFormat: value => `${value}`,
+    valueFormat: value => `${formatNumber(value)}%`,
+    title: 'Evolução da taxa de escolarização na Bahia',
+    scaleDescription: 'Escala de zero a cem por cento.',
+    emptyMessage: 'Não há valores numéricos para desenhar o gráfico deste recorte.'
+  });
 }
 
 function renderBreakdown(year, raceId, ageId) {
@@ -220,7 +172,7 @@ $('filters').addEventListener('reset', event => {
   elements.race.value = model.races.some(([id]) => id === TOTAL_RACE) ? TOTAL_RACE : model.races[0][0];
   render();
 });
-elements.refresh.addEventListener('click', load);
+elements.refresh.addEventListener('click', () => { load(); loadGuanambi(); });
 $('retry').addEventListener('click', load);
 elements.export.addEventListener('click', () => {
   if (!currentRows.length) return;
@@ -245,3 +197,4 @@ new ResizeObserver(entries => {
 }).observe($('chart'));
 
 load();
+initGuanambi();

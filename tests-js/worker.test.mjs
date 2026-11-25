@@ -97,3 +97,21 @@ test('Worker exige a origem Vapor e nunca consulta o IBGE diretamente', async ()
   assert.equal(response.status, 503);
   assertSecured(response);
 });
+
+test('Worker encaminha /api/guanambi ao Vapor e aplica as mesmas regras de método e erro', async () => {
+  const { fixture } = await import('./guanambi-fixture.mjs');
+  const worker = createWorker(async url => {
+    assert.equal(url, 'https://swift.example.com/api/guanambi');
+    return Response.json(fixture());
+  });
+  const response = await worker.fetch(request('/api/guanambi'), env);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assertSecured(response);
+  assert.equal((await response.json()).municipalityId, '2911709');
+  const post = await worker.fetch(request('/api/guanambi', 'POST'), env);
+  assert.equal(post.status, 405);
+  assert.equal(post.headers.get('allow'), 'GET');
+  const failing = createWorker(async () => new Response('', { status: 504 }));
+  assert.equal((await failing.fetch(request('/api/guanambi'), env)).status, 504);
+});

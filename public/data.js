@@ -108,10 +108,11 @@ export function formatRaw(value, raw) {
   return value === null || value === undefined ? (raw ?? '—') : formatNumber(value);
 }
 
-function csvCell(value) {
+export function csvCell(value) {
   let text = String(value ?? '');
   // Impede que campos textuais sejam interpretados como fórmulas por planilhas.
-  if (/^[=+@\-\t\r]/.test(text) && !/^-?\d+(?:[.,]\d+)?$/.test(text)) text = `'${text}`;
+  // O símbolo "-" do IBGE (valor nulo) sozinho não é fórmula e é preservado.
+  if (/^[=+@\-\t\r]/.test(text) && text !== '-' && !/^-?\d+(?:[.,]\d+)?$/.test(text)) text = `'${text}`;
   return `"${text.replaceAll('"', '""')}"`;
 }
 
