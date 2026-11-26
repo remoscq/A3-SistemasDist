@@ -3,36 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f8fafc">
+  <meta name="theme-color" content="#f3f3f3">
   <meta name="description" content="Consulte a taxa de escolarização na Bahia e a rede escolar de Guanambi, com dados oficiais do IBGE e do INEP.">
   <title>Educação na Bahia · Bahia API Hub</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <script type="module" src="/app.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#indicadores">Ir para os indicadores</a>
-  <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
-    <section class="border-b border-slate-200 pb-6" aria-labelledby="page-title">
-      <p class="mb-3 text-xs font-medium text-slate-500">Bahia API Hub <span class="mx-2 text-slate-300" aria-hidden="true">/</span> <span class="text-modulo-educacao">Educação</span></p>
-      <div class="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-        <div>
-          <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl" id="page-title">Taxa de escolarização na Bahia</h1>
-          <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Proporção de pessoas que frequentam escola, por grupo de idade e cor ou raça.</p>
-        </div>
-        <div class="intro-actions flex flex-wrap gap-2 lg:shrink-0">
-          <button class="button button-secondary" id="refresh" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1"/></svg>Atualizar</button>
-          <button class="button button-primary" id="export" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg>Exportar CSV</button>
-        </div>
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="navbar-brand" href="/"><img src="/favicon.svg" alt="" width="24" height="24">Bahia API Hub <span class="navbar-module">Educação</span></a>
+      <nav class="navbar-links" aria-label="Seções">
+        <a href="#indicadores">Bahia</a>
+        <a href="#guanambi">Guanambi</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-[1170px] px-4 pt-8 pb-12 sm:px-6">
+    <section class="page-header" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title">Taxa de escolarização na Bahia</h1>
+        <p class="page-lead">Proporção de pessoas que frequentam escola, por grupo de idade e cor ou raça.</p>
+        <p class="page-meta"><span>Bahia · UF 29</span><span>IBGE · PNAD Contínua anual</span><a href="https://sidra.ibge.gov.br/tabela/7139" target="_blank" rel="noopener noreferrer">Tabela 7139 no SIDRA</a></p>
       </div>
-      <p class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500"><span>Bahia · UF 29</span><span>IBGE · PNAD Contínua anual</span><a href="https://sidra.ibge.gov.br/tabela/7139" target="_blank" rel="noopener noreferrer">Consultar tabela 7139 ↗</a><a href="#guanambi">Ver Guanambi ↓</a></p>
+      <div class="page-actions">
+        <button class="button button-secondary" id="refresh" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1"/></svg>Atualizar</button>
+        <button class="button button-primary" id="export" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg>Exportar CSV</button>
+      </div>
     </section>
 
-    <form class="card mt-6" id="filters" aria-labelledby="filters-title">
-      <h2 class="mb-4 text-sm font-semibold" id="filters-title">Recorte dos dados</h2>
+    <form class="card" id="filters" aria-labelledby="filters-title">
+      <div class="section-heading"><h2 id="filters-title">Recorte dos dados</h2></div>
       <div class="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
         <label>Período<select id="period" name="period" disabled><option>Carregando…</option></select></label>
         <label>Grupo de idade<select id="age" name="age" disabled><option>Carregando…</option></select></label>
@@ -47,13 +51,13 @@
     <section class="card empty-panel" id="empty-panel" hidden><h2>Nenhum dado disponível</h2><p>O IBGE não retornou observações para esta consulta. Tente atualizar mais tarde.</p></section>
 
     <div id="dashboard" aria-busy="true">
-      <section class="grid gap-4 md:grid-cols-3" id="indicadores" aria-label="Indicadores do recorte selecionado">
-        <article class="card"><div class="metric-heading"><h2>Taxa de escolarização</h2></div><div class="metric-value text-modulo-educacao" id="rate-value">—</div><p class="metric-note" id="rate-note">Aguardando consulta</p></article>
+      <section class="grid gap-5 md:grid-cols-3" id="indicadores" aria-label="Indicadores do recorte selecionado">
+        <article class="card"><div class="metric-heading"><h2>Taxa de escolarização</h2></div><div class="metric-value" id="rate-value">—</div><p class="metric-note" id="rate-note">Aguardando consulta</p></article>
         <article class="card"><div class="metric-heading"><h2>Variação entre períodos</h2></div><div class="metric-value" id="change-value">—</div><p class="metric-note" id="change-note">Comparação em pontos percentuais</p></article>
         <article class="card"><div class="metric-heading"><h2>Coeficiente de variação</h2></div><div class="metric-value" id="cv-value">—</div><p class="metric-note">Variabilidade relativa da estimativa</p></article>
       </section>
 
-      <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <section class="card" aria-labelledby="chart-title">
           <div class="section-heading"><h2 id="chart-title">Série histórica</h2><span class="small-badge" id="chart-period">Aguardando dados</span></div>
           <p class="section-description" id="chart-context">Taxa de escolarização na Bahia, em %.</p>
@@ -69,8 +73,9 @@
         </section>
       </div>
 
-      <section class="card mt-6" aria-labelledby="table-title">
-        <div class="section-heading"><div><h2 id="table-title">Dados da série</h2><p class="section-description" id="table-context">Série histórica para o recorte selecionado.</p></div><span class="small-badge" id="row-count">0 registros</span></div>
+      <section class="card mt-5" aria-labelledby="table-title">
+        <div class="section-heading"><h2 id="table-title">Dados da série</h2><span class="small-badge" id="row-count">0 registros</span></div>
+        <p class="section-description" id="table-context">Série histórica para o recorte selecionado.</p>
         <div class="table-scroll" tabindex="0" role="region" aria-label="Tabela de dados históricos, com rolagem horizontal">
           <table><caption class="sr-only">Taxa de escolarização e coeficiente de variação para o recorte selecionado na Bahia.</caption>
             <thead><tr><th scope="col">Período</th><th scope="col">Localidade</th><th scope="col">Grupo de idade</th><th scope="col">Cor ou raça</th><th scope="col" class="numeric">Escolarização (%)</th><th scope="col" class="numeric">Coef. de variação (%)</th></tr></thead>
@@ -80,25 +85,25 @@
         <p class="table-note">Valores e símbolos de indisponibilidade reproduzidos conforme a publicação do IBGE.</p>
       </section>
 
-      <aside class="mt-6 border-t border-slate-200 pt-5 text-xs leading-6 text-slate-500" aria-labelledby="source-title">
-        <h2 class="font-semibold text-slate-600" id="source-title">Sobre os dados</h2>
-        <p class="mt-1">A taxa considera as pessoas que frequentam escola no grupo selecionado. O coeficiente de variação expressa a variabilidade relativa da estimativa.</p>
-        <p>Fonte: IBGE · PNAD Contínua anual · <a href="https://sidra.ibge.gov.br/tabela/7139" target="_blank" rel="noopener noreferrer">Tabela 7139 ↗</a></p>
+      <aside class="well" aria-labelledby="source-title">
+        <h2 id="source-title">Sobre os dados</h2>
+        <p>A taxa considera as pessoas que frequentam escola no grupo selecionado. O coeficiente de variação expressa a variabilidade relativa da estimativa.</p>
+        <p>Fonte: IBGE · PNAD Contínua anual · <a href="https://sidra.ibge.gov.br/tabela/7139" target="_blank" rel="noopener noreferrer">Tabela 7139</a></p>
         <p id="timestamp" class="source-timestamp"></p>
       </aside>
     </div>
-    <section class="guanambi" id="guanambi" aria-labelledby="guanambi-title">
-      <p class="mb-3 text-xs font-medium text-slate-500">Município de referência <span class="mx-2 text-slate-300" aria-hidden="true">/</span> <span class="text-modulo-educacao">Guanambi (BA)</span></p>
-      <div class="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+
+    <section class="section-divider" id="guanambi" aria-labelledby="guanambi-title">
+      <div class="page-header">
         <div>
-          <h2 class="text-xl font-semibold tracking-tight sm:text-2xl" id="guanambi-title">Guanambi em foco</h2>
-          <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Rede escolar do município segundo o Censo Escolar e indicadores do Censo Demográfico 2022, comparados com a Bahia.</p>
+          <h2 id="guanambi-title">Guanambi em foco <small>município de referência</small></h2>
+          <p class="page-lead">Rede escolar do município segundo o Censo Escolar e indicadores do Censo Demográfico 2022, comparados com a Bahia.</p>
+          <p class="page-meta"><span>Código IBGE 2911709</span><span>INEP · Censo Escolar</span><span>IBGE · Censo 2022</span><a href="https://cidades.ibge.gov.br/brasil/ba/guanambi/panorama" target="_blank" rel="noopener noreferrer">Panorama no IBGE Cidades</a></p>
         </div>
-        <div class="intro-actions flex flex-wrap gap-2 lg:shrink-0">
+        <div class="page-actions">
           <button class="button button-secondary" id="g-export" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg>Exportar CSV</button>
         </div>
       </div>
-      <p class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500"><span>Código IBGE 2911709</span><span>INEP · Censo Escolar</span><span>IBGE · Censo 2022</span><a href="https://cidades.ibge.gov.br/brasil/ba/guanambi/panorama" target="_blank" rel="noopener noreferrer">Panorama no IBGE Cidades ↗</a></p>
 
       <div class="feedback" id="g-feedback" role="status" aria-live="polite">Consultando os dados de Guanambi…</div>
       <section class="card error-panel" id="g-error-panel" aria-labelledby="g-error-title" hidden>
@@ -107,16 +112,16 @@
 
       <div id="g-dashboard" aria-busy="true">
         <form class="card" id="g-filters" aria-labelledby="g-filters-title">
-          <h3 class="mb-4 text-sm font-semibold" id="g-filters-title">Recorte do Censo Escolar</h3>
+          <div class="section-heading"><h3 id="g-filters-title">Recorte do Censo Escolar</h3></div>
           <div class="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_minmax(0,1fr)]">
             <label>Ano<select id="g-year" name="year" disabled><option>Carregando…</option></select></label>
             <label>Indicador<select id="g-measure" name="measure" disabled></select></label>
           </div>
         </form>
 
-        <section class="mt-6 grid gap-4 md:grid-cols-3" id="g-stages" aria-label="Indicador por etapa de ensino; selecione uma etapa para ver a série histórica"></section>
+        <section class="mt-5 grid gap-5 md:grid-cols-3" id="g-stages" aria-label="Indicador por etapa de ensino; selecione uma etapa para ver a série histórica"></section>
 
-        <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <div class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <section class="card" aria-labelledby="g-chart-title">
             <div class="section-heading"><h3 id="g-chart-title">Série histórica</h3><span class="small-badge" id="g-chart-period">Aguardando dados</span></div>
             <p class="section-description" id="g-chart-context">Selecione uma etapa de ensino.</p>
@@ -124,7 +129,8 @@
             <p class="chart-footnote">Selecione uma etapa nos cards acima para trocar a série. Docentes e escolas são contados em cada etapa em que atuam ou que oferecem; por isso, as etapas não devem ser somadas.</p>
           </section>
           <section class="card" aria-labelledby="g-table-title">
-            <div class="section-heading"><div><h3 id="g-table-title">Dados por etapa</h3><p class="section-description" id="g-table-context">Série por etapa de ensino.</p></div><span class="small-badge" id="g-row-count">0 anos</span></div>
+            <div class="section-heading"><h3 id="g-table-title">Dados por etapa</h3><span class="small-badge" id="g-row-count">0 anos</span></div>
+            <p class="section-description" id="g-table-context">Série por etapa de ensino.</p>
             <div class="table-scroll table-scroll-tall" tabindex="0" role="region" aria-label="Tabela do Censo Escolar de Guanambi por etapa, com rolagem">
               <table><caption class="sr-only">Censo Escolar de Guanambi por ano e etapa de ensino.</caption>
                 <thead><tr><th scope="col">Ano</th><th scope="col" class="numeric">Infantil</th><th scope="col" class="numeric">Fundamental</th><th scope="col" class="numeric">Médio</th></tr></thead>
@@ -135,15 +141,15 @@
         </div>
 
         <div class="subsection-heading">
-          <div><h3>Censo Demográfico 2022</h3><p class="section-description">Guanambi comparado com a Bahia, em %.</p></div>
+          <div><h3>Censo Demográfico 2022</h3><p class="section-description mt-1">Guanambi comparado com a Bahia, em %.</p></div>
           <div class="legend" aria-hidden="true"><span><i class="legend-dot"></i>Guanambi</span><span><i class="legend-dot legend-dot-bahia"></i>Bahia</span></div>
         </div>
-        <div class="grid gap-6 lg:grid-cols-2">
+        <div class="grid gap-5 lg:grid-cols-2">
           <section class="card" aria-labelledby="g-literacy-title">
             <div class="section-heading"><h3 id="g-literacy-title">Taxa de alfabetização</h3></div>
-            <p class="section-description">Pessoas de 15 anos ou mais que sabem ler e escrever.</p>
+            <p class="section-description mb-4">Pessoas de 15 anos ou mais que sabem ler e escrever.</p>
             <div class="compare-totals">
-              <p><span class="compare-name">Guanambi</span><span class="compare-value text-modulo-educacao" id="g-literacy-guanambi">—</span></p>
+              <p><span class="compare-name">Guanambi</span><span class="compare-value text-accent" id="g-literacy-guanambi">—</span></p>
               <p><span class="compare-name">Bahia</span><span class="compare-value" id="g-literacy-bahia">—</span></p>
             </div>
             <div class="segmented" role="group" aria-label="Recorte da alfabetização">
@@ -161,10 +167,10 @@
           </section>
         </div>
 
-        <aside class="mt-6 border-t border-slate-200 pt-5 text-xs leading-6 text-slate-500" aria-labelledby="g-source-title">
-          <h3 class="font-semibold text-slate-600" id="g-source-title">Sobre os dados de Guanambi</h3>
-          <p class="mt-1">Matrículas, docentes e escolas vêm do Censo Escolar do INEP, publicados na API do IBGE Cidades. Alfabetização e frequência escolar vêm do Censo Demográfico 2022.</p>
-          <p>Fontes: <a href="https://cidades.ibge.gov.br/brasil/ba/guanambi/pesquisa/13/5902" target="_blank" rel="noopener noreferrer">IBGE Cidades · Ensino ↗</a> · <a href="https://sidra.ibge.gov.br/tabela/9543" target="_blank" rel="noopener noreferrer">Tabela 9543 ↗</a> · <a href="https://sidra.ibge.gov.br/tabela/10056" target="_blank" rel="noopener noreferrer">Tabela 10056 ↗</a></p>
+        <aside class="well" aria-labelledby="g-source-title">
+          <h3 id="g-source-title">Sobre os dados de Guanambi</h3>
+          <p>Matrículas, docentes e escolas vêm do Censo Escolar do INEP, publicados na API do IBGE Cidades. Alfabetização e frequência escolar vêm do Censo Demográfico 2022.</p>
+          <p>Fontes: <a href="https://cidades.ibge.gov.br/brasil/ba/guanambi/pesquisa/13/5902" target="_blank" rel="noopener noreferrer">IBGE Cidades · Ensino</a> · <a href="https://sidra.ibge.gov.br/tabela/9543" target="_blank" rel="noopener noreferrer">Tabela 9543</a> · <a href="https://sidra.ibge.gov.br/tabela/10056" target="_blank" rel="noopener noreferrer">Tabela 10056</a></p>
           <p id="g-timestamp" class="source-timestamp"></p>
         </aside>
       </div>
